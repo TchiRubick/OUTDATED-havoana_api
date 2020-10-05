@@ -14,7 +14,6 @@ class Device extends Model
     protected $fillable = [
         'dvc_detail',
         'dvc_idexterne',
-        'dvc_transac',
         'dvc_statut'
     ];
 

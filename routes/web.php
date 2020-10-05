@@ -15,7 +15,7 @@ $router->get('/', function() {
         'success'   =>  true,
         'response'  => [],
         'details'   => array(
-            'uri' => '/'
+            'uri' => ''
         )
     ); 
 });

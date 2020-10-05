@@ -19,8 +19,9 @@ class ProduitLib
         $result = [];
 
         try {
-            $produit = Produit::select("prd_nom", "prd_codebarre", "prd_quantite", "prd_prixvente")
-                ->where("prd_quantite", ">", 0)
+            $produit = Produit::select("prd_nom", "prd_codebarre", "magst_quantite", "magst_prix")
+                ->join('tr_magstock', 'prd_idexterne', 'magst_prdid')
+                ->where("magst_quantite", ">", 0)
                 ->get();
 
             if (count($produit) > 0) {
