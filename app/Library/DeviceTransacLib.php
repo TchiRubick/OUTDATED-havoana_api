@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Log;
 class DeviceTransacLib
 {
 
+    public $guidTrans;
+
     public function __construct($conn = null)
     {
         if ($conn) {
@@ -20,18 +22,61 @@ class DeviceTransacLib
             TransacDetail::setInfosDb($conn);
             DeviceUser::setInfosDb($conn);
         }
+
+        $objGuid    = new Guid();
+        $this->guidTrans  = $objGuid->generatGuid();
     }
+
+    /*
+    * Verifiy if device exist and is actif
+    * @param $machine string
+    * @return boolean
+    */
+    public function isDeviceExist($machine) 
+    {
+        try {
+            $device = Device::select("dvc_idexterne")
+                ->where("dvc_idexterne", "=", md5($machine))
+                ->where("dvc_statut", "=", "ACT")
+                ->take(1)
+                ->get();
+    
+                return count($device) > 0;
+        } catch (\Exception $th) {
+            Log::error("DeviceTransacLib - isDeviceExist() => ", [$th->getMessage()]);
+            return false;
+        }
+    }
+
+
+    /*
+    * Create new device
+    * @param $machine string
+    * @return void
+    */
+    public function setNewDevice($machine)
+    {
+        Device::updateOrCreate(
+            [
+                "dvc_idexterne" => md5($machine)
+            ],
+            [
+                "dvc_detail"    => $machine,
+                "dvc_statut"    => 'TEN',
+                "dvc_datecrea"  => date('Y-m-d H:i:s')
+            ]
+        );
+    }
+
+
 
     public function setTransactionAuth($machine, $login)
     {
-        $objGuid    = new Guid();
-
-        $guidTrans  = $objGuid->generatGuid();
-
         $guidDevice = md5($machine);
 
         try {
-            $device = Device::select("dvc_idexterne")
+            $device = Device::select("dvc_idexterne", "magudvc_mag")
+                ->join("tr_maguserdevice", 'dvc_idexterne', 'magudvc_device')
                 ->where("dvc_idexterne", "=", $guidDevice)
                 ->where("dvc_statut", "=", "ACT")
                 ->take(1)
@@ -64,7 +109,8 @@ class DeviceTransacLib
 
             return array(
                 "transac" => $guidTrans,
-                "device"  => $guidDevice
+                "device"  => $guidDevice,
+                "magasin" => $device->magudvc_mag
             );
         } catch (\Exception $th) {
             Log::error("DeviceTransacLib - setTransactionAuth() => ", [$th->getMessage()]);
@@ -128,21 +174,6 @@ class DeviceTransacLib
         $result = true;
 
         try {
-            $device = Device::select("dvc_idexterne")
-                ->where("dvc_idexterne", "=", $deviceIde)
-                ->where("dvc_statut", "=", "ACT")
-                ->take(1)
-                ->get();
-
-            if (count($device) < 1) {
-                throw new \Exception("device not found");
-            }
-
-            Device::where("dvc_idexterne", "=", $deviceIde)
-                ->update([
-                    "dvc_transac"   => $guidTransac
-                ]);
-
             Transac::create([
                 "tsc_idexterne" => $guidTransac,
                 "tsc_action"    => 'SELL',

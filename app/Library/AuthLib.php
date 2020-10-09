@@ -10,10 +10,10 @@ class AuthLib
     public $TOKEN;
 
 
-    public function authResponse(Utilisateur $objUser, Societe $objSociete, $machine)
+    public function authResponse(Utilisateur $objUser, Societe $objSociete, $machine, $magasin)
     {
         $date = date('Y-m-d H:i:s');
-        $data = [$objUser->utl_idexterne, $objSociete->soc_idexterne, $date, $machine];
+        $data = [$objUser->utl_idexterne, $objSociete->soc_idexterne, $date, $machine, $magasin];
 
         $this->TOKEN = Crypt::encryptString(json_encode($data));
 

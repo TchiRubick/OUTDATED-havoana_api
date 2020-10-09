@@ -9,6 +9,7 @@ use App\Library\AuthLib;
 use App\Library\SocieteLib;
 use App\Library\DeviceTransacLib;
 use App\Library\UserLib;
+use App\Library\MaguserdeviceLib;
 
 /**
  * Logique des code erreur.
@@ -62,33 +63,42 @@ class AuthController extends BaseController
 
             // Verifie si le device est authorisé et ecrit la transaction.
             $this->_code = 1020;
-            $DeviceTransacLib   = new DeviceTransacLib($this->_conn);
-            $a_transac          = $DeviceTransacLib->setTransactionAuth($request->input('machine'), $request->input('login'));
+            $DeviceTransacLib       = new DeviceTransacLib($this->_conn);
+            $b_deviceExist          = $DeviceTransacLib->isDeviceExist($request->input('machine'));
 
-            if(empty($a_transac)) {
-                throw new \Exception("Erreur interne");
+            if (!$b_deviceExist) {
+                $DeviceTransacLib->setNewDevice($request->input('machine'));
+                throw new \Exception("Device not recognized, please tell your admin to register your device");
             }
 
             // Vérifie si login et le mot de passe correspond à un utilisateur
             $this->_code = 1030;
             $UserLib    = new UserLib($this->_conn);
             $user       = $UserLib->getByLoginPassword($request->input('login'), $request->input('password'));
-
+            
             if (!$user) {
-                $DeviceTransacLib->updateFailedAuth($a_transac["transac"]);
+                $DeviceTransacLib->updateFailedAuth($DeviceTransacLib->guidTrans);
                 throw new \Exception("User not found");
             }
 
-            if ($user["rl_code"] !== "SUP" && $user["rl_code"] !== "ADMIN") {
+            $objMag = new MaguserdeviceLib($this->_conn);
+            $a_magU = $objMag->getMagasinConnection(md5($request->input('machine')), $user['utl_idexterne']);
+            
+            if (empty($a_magU)) {
+                throw new \Exception("Store not set");
+            }
+
+            if ($user["rl_code"] !== "SUP") {
                 $this->_code = 1040;
-                if (!$DeviceTransacLib->isDeviceAllowedOnUser($a_transac['device'], $user['utl_idexterne'])) {
-                    $DeviceTransacLib->updateFailedAuth($a_transac["transac"]);
+
+                if (!$DeviceTransacLib->isDeviceAllowedOnUser(md5($request->input('machine')), $user['utl_idexterne'])) {
+                    $DeviceTransacLib->updateFailedAuth($DeviceTransacLib->guidTrans);
                     throw new \Exception("Device not recognized, please tell your admin to register your device");
                 }
             }
 
             $this->_code = 1050;
-            self::$SUCCESS_RESPONSE["response"] = (new AuthLib)->authResponse($user, $this->_conn, $a_transac['device']);
+            self::$SUCCESS_RESPONSE["response"] = (new AuthLib)->authResponse($user, $this->_conn, md5($request->input('machine')), $a_magU["magudvc_mag"]);
             return self::$SUCCESS_RESPONSE;
         } catch (\Exception $th) {
             self::$ERROR_RESPONSE["response"] = $th->getMessage();

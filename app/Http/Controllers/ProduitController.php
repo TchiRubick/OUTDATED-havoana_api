@@ -42,10 +42,11 @@ class ProduitController extends BaseController
         try {
             $this->_code = 1010;
             $this->_conn = $request->get('connection');
+            $this->_session = $request->get('session');
 
             $this->_code = 1020;
             $ProduitLib = new ProduitLib($this->_conn);
-            $produit = $ProduitLib->getAllActif();
+            $produit = $ProduitLib->getAllActif($this->_session->MAG);
 
             if (empty($produit)) {
                 throw new \Exception("");

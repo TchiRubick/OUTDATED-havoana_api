@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Library\Guid;
 use App\Library\DeviceTransacLib;
 use App\Library\ProduitLib;
+use App\Library\VenteLib;
 
 use Laravel\Lumen\Routing\Controller as BaseController;
 
@@ -60,16 +61,19 @@ class TransacController extends BaseController
             $montantTotal   = 0;
             $detail         = [];
             $produit        = [];
+            $vente          = [];
             $Guid           = new Guid();
             $guidTransac    = $Guid->generatGuid();
 
+            $ProduitLib = new ProduitLib($this->_conn);
+
             foreach ($panier as $pan) {
-                $montantTotal += $pan['article']['prd_prixvente'] * $pan['quantite'];
+                $montantTotal += $pan['article']['magst_prix'] * $pan['quantite'];
                 $detail[] = array(
                     "tscd_idexterne"    => $Guid->generatGuid(),
                     "tscd_produit"      => $pan['article']['prd_codebarre'],
                     "tscd_quantite"     => $pan['quantite'],
-                    "tscd_montant"      => $pan['article']['prd_prixvente'] * $pan['quantite'],
+                    "tscd_montant"      => $pan['article']['magst_prix'] * $pan['quantite'],
                     "tscd_datecrea"     => date('Y-m-d H:i:s'),
                     "tscd_transac"      => $guidTransac
                 );
@@ -78,6 +82,20 @@ class TransacController extends BaseController
                     "prd_codebarre" => $pan['article']['prd_codebarre'],
                     "prd_quantite"  => $pan['quantite'],
                 );
+
+                $prd = $ProduitLib->getProduitByCb($pan['article']['prd_codebarre']);
+
+                $vente[] = array(
+                    "vnt_mag"       => $this->_session->MAG,
+                    "vnt_caisse"    => $this->_session->MACHINE,
+                    "vnt_userid"    => $this->_session->ID,
+                    "vnt_date"      => date('Y-m-d H:i:s'),
+                    "vnt_update"    => date('Y-m-d H:i:s'),
+                    "vnt_prix"      => $pan['article']['magst_prix'],
+                    "vnt_quantite"  => $pan['quantite'],
+                    "vnt_prdid"     => $prd['prd_idexterne'],
+                    "vnt_type"      => 'VNT'
+                );
             }
 
             $this->_code = 1140;
@@ -85,6 +103,13 @@ class TransacController extends BaseController
             $isInserted = $DeviceTransacLib->setSellTransac($guidTransac, $montantTotal, $this->_session->ID, $this->_session->MACHINE);
 
             if (!$isInserted) throw new \Exception("Erreur sauvegarde transaction");
+
+            $objVente = new VenteLib($this->_conn);
+
+            foreach ($vente as $vnt) {
+                $isInserted = $objVente->venteSet($vnt);
+                if (!$isInserted) throw new \Exception("Erreur sauvegarde vente");
+            }
 
             $this->_code = 1150;
             $isInserted = $DeviceTransacLib->setSellTransacDetail($detail);
@@ -95,8 +120,7 @@ class TransacController extends BaseController
             }
 
             $this->_code = 1160;
-            $ProduitLib = new ProduitLib($this->_conn);
-            $isInserted = $ProduitLib->decrementProduitByCodebarre($produit);
+            $isInserted = $ProduitLib->decrementProduitByCodebarre($produit, $this->_session->MAG);
 
             if (!$isInserted) {
                 $DeviceTransacLib->updateFailedAuth($guidTransac, $this->_session->MACHINE);

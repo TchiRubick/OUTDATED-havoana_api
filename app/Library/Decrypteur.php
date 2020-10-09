@@ -19,11 +19,12 @@ class Decrypteur
         if ($j_token) {
             $a_token = json_decode($j_token);
 
-            if (is_array($a_token) && count($a_token) === 4) {
+            if (is_array($a_token) && count($a_token) === 5) {
                 $this->ID       = $a_token[0];
                 $this->IDS      = $a_token[1];
                 $this->DATE     = $a_token[2];
                 $this->MACHINE  = $a_token[3];
+                $this->MAG      = $a_token[4];
                 $this->PARSED   = $a_token;
             }
         }
