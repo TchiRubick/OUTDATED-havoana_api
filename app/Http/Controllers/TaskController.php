@@ -98,8 +98,8 @@ class TaskController extends BaseController
 				. "<li>Votre login: <b>" . $s_login . "</b></li>"
 				. "<li>Votre mot de passe: <b>" . $s_password . "</b></li>"
 				. "<li>Type du compte: <b>" . $a_role["rl_libelle"] . "</b></li>"
-				. "<li>Lien pour accéder à l'ERP: <a href='" . ERP_URL . "'>erp.havoana.com</a></li>"
-				. "<li>Lien pour accéder au POS: <a href='" . POS_URL . "'>cashier.havoana.com</a> </li>"
+				. "<li>Lien pour accéder à l'ERP: <a href='" . ERP_URL . "'>erp.havoana.net</a></li>"
+				. "<li>Lien pour accéder au POS: <a href='" . POS_URL . "'>cashier.havoana.net</a> </li>"
                 . "</ul>"
                 . "<p>Cependant, il faudrait vérifier auprès de votre administrateur si le compte est actif.</p>"
                 . "<p style='color:red;'>NB: Un compte <i>Agent de caisse</i> doit avoir sont appareil autorisé à utiliser l'application POS. <br/> Authentifiez vous une(1) fois puis notifier votre administrateur pour autoriser l'appareil;</p>";

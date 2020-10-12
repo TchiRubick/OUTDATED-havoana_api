@@ -5,7 +5,7 @@ namespace App\Library;
 use App\Device;
 use App\Transac;
 use App\TransacDetail;
-use App\DeviceUser;
+use App\Maguserdevice;
 use App\Library\Guid;
 use Illuminate\Support\Facades\Log;
 
@@ -20,7 +20,7 @@ class DeviceTransacLib
             Device::setInfosDb($conn);
             Transac::setInfosDb($conn);
             TransacDetail::setInfosDb($conn);
-            DeviceUser::setInfosDb($conn);
+            Maguserdevice::setInfosDb($conn);
         }
 
         $objGuid    = new Guid();
@@ -197,9 +197,9 @@ class DeviceTransacLib
         $isAllowed = false;
 
         try {
-            $result = DeviceUser::select("*")
-                ->where("dvcu_device", "=", $idd)
-                ->where("dvcu_user", "=", $idu)
+            $result = Maguserdevice::select("*")
+                ->where("magudvc_device", "=", $idd)
+                ->where("magudvc_user", "=", $idu)
                 ->take(1)
                 ->get();
 
