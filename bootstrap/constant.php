@@ -1,11 +1,11 @@
 <?php
-define('SMTP_HOST', 'email-smtp.eu-central-1.amazonaws.com');
-define('SMTP_USER', 'AKIAXFCEQLFPTGU346EU');
-define('SMTP_PASS', 'BAdj88v2atdwl0BsOFGjM159wTbqL1EsdtPJpaXpy6Q2');
-define('SMTP_PORT', '587');
-define('SMTP_FROM', 'support@mail.havoana.net');
-define('SMTP_NAME', 'Support Havoana');
+define('SMTP_HOST', '');
+define('SMTP_USER', '');
+define('SMTP_PASS', '');
+define('SMTP_PORT', '');
+define('SMTP_FROM', '');
+define('SMTP_NAME', '');
 
-define('APP_KEY', 'yDKLw1JbBPYzVO3lSSK3y3dkCBF0FDIW');
-define('ERP_URL', "https://erp.havoana.net/");
-define('POS_URL', "https://cashier.havoana.net/");
+define('APP_KEY', '');
+define('ERP_URL', "");
+define('POS_URL', "");
